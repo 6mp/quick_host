@@ -67,8 +67,8 @@ async fn main() -> std::io::Result<()> {
                 let file = file.unwrap();
                 if let Ok(creation_time) = file.metadata().unwrap().created() {
                     if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > SECONDS_IN_3_DAYS {
-                        fs::remove_file(file.path())?;
                         println!("deleting file {}", file.path().to_str().unwrap());
+                        fs::remove_file(file.path())?;
                     }
                 }
             }
