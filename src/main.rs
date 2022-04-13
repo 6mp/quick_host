@@ -1,6 +1,6 @@
-use std::fs;
+use std::{fs, thread};
 use std::path::Path;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use actix_files::NamedFile;
 use actix_web::{
@@ -55,6 +55,24 @@ async fn main() -> std::io::Result<()> {
     if !Path::new("pages").is_dir() {
         fs::create_dir("pages")?;
     }
+
+    thread::spawn(move || -> std::io::Result<()> {
+        loop {
+            let dir = fs::read_dir("pages")?;
+
+            for file in dir {
+                let file = file.unwrap();
+                if let Ok(creation_time) = file.metadata().unwrap().created() {
+                    if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > 10 {
+                        fs::remove_file(file.path())?;
+                        println!("deleting file {}", file.path().to_str().unwrap());
+                    }
+                }
+            }
+
+            std::thread::sleep(Duration::from_secs(10));
+        }
+    });
 
     HttpServer::new(move || {
         App::new()
