@@ -10,7 +10,7 @@ use actix_web::{
 };
 use env_logger::Env;
 
-const SECONDS_IN_3_DAYS: u64 = 259200;
+const DELETE_DELAY: u64 = 259200; //3 days
 const API_KEY: &str = "hello";
 
 pub fn get_timestamp() -> String {
@@ -65,8 +65,8 @@ async fn main() -> std::io::Result<()> {
 
             for file in dir {
                 let file = file.unwrap();
-                if let Ok(creation_time) = file.metadata().unwrap().created() {
-                    if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > SECONDS_IN_3_DAYS {
+                if let Ok(creation_time) = file.metadata()?.created() {
+                    if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > DELETE_DELAY {
                         println!("deleting file {}", file.path().to_str().unwrap());
                         fs::remove_file(file.path())?;
                     }
