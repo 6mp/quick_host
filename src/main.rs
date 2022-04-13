@@ -10,6 +10,9 @@ use actix_web::{
 };
 use env_logger::Env;
 
+const SECONDS_IN_3_DAYS: u64 = 259200;
+const API_KEY: &str = "hello";
+
 pub fn get_timestamp() -> String {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -22,8 +25,8 @@ pub fn get_timestamp() -> String {
 async fn upload_page(req: HttpRequest, body: Bytes) -> impl Responder {
     //only let authorized people through (only us)
     match req.headers().get("api_key") {
-        Some(header) => {
-            if header != "ssss" {
+        Some(key) => {
+            if key != API_KEY {
                 return HttpResponse::Unauthorized().body("invalid api key");
             }
         }
@@ -63,7 +66,7 @@ async fn main() -> std::io::Result<()> {
             for file in dir {
                 let file = file.unwrap();
                 if let Ok(creation_time) = file.metadata().unwrap().created() {
-                    if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > 10 {
+                    if SystemTime::now().duration_since(creation_time).unwrap().as_secs() > SECONDS_IN_3_DAYS {
                         fs::remove_file(file.path())?;
                         println!("deleting file {}", file.path().to_str().unwrap());
                     }
