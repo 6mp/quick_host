@@ -45,7 +45,7 @@ async fn upload_page(req: HttpRequest, body: Bytes) -> impl Responder {
     }
 }
 
-#[actix_web::get("/{filename}")]
+#[actix_web::get("/pages/{filename}")]
 async fn serve_file(req: HttpRequest) -> std::io::Result<NamedFile> {
     let path: String = "pages/".to_owned() + req.match_info().query("filename");
     Ok(NamedFile::open(path).unwrap())
